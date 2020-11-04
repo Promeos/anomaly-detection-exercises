@@ -57,15 +57,33 @@ def ip_status_proabilities(df):
         (df.groupby(['ip', 'status']).size()
         / df.groupby(['ip']).status.size())
         .reset_index().
-        rename(columns={0:'status_probability'})
+        rename(columns={0:'prob_status_given_ip'})
     )
     
-    ip_status_counts = (
+    ip_status_count = (
 
         pd.DataFrame(df.groupby(by=['ip', 'status']).size())
         .reset_index()
-        .rename(columns={0:'ip_status_counts'})
+        .rename(columns={0:'ip_status_count'})
     )
     
-    ip_status = ip_status_counts.merge(status_given_ip, on=['ip', 'status'])
+    ip_status = ip_status_count.merge(status_given_ip, on=['ip', 'status'])
     return ip_status
+
+def eda_log_data(train, df):
+    '''
+    
+    '''
+    ip_status = ip_status_proabilities(train)
+    
+    df = (
+            
+    df
+    .reset_index()
+    .merge(ip_status, on=['ip', 'status'], how='left')
+    .fillna(value=0)
+    .set_index('timestamp')
+    
+    )
+    
+    return df
