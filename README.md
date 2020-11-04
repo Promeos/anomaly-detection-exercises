@@ -1,1 +1,1 @@
-# Anamoly Detection Exercises
+# Anomaly Detection Exercises
