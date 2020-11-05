@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-
+############################# Acquire Store Log Data ##################################
 def get_log_data():
     '''
     
@@ -34,3 +34,32 @@ def get_log_data():
     
     df = df_request.append(new)
     return df
+
+
+############################# Acquire Codeup Log Data ##################################
+
+def get_cohort_log_data():
+    '''
+    
+    '''
+    colnames=['date', 'time', 'page_viewed','user_id','cohort_id','ip']
+
+    df = pd.read_csv('data/anonymized-curriculum-access.txt',          
+                    engine='python',
+                    header=None,
+                    index_col=False,
+                    names=colnames,
+                    sep=r'\s(?=(?:[^"]*"[^"]*")*[^"]*$)(?![^\[]*\])',
+                    na_values='"-"',
+                    usecols=[0,1,2,3,4,5])
+
+    df = df.fillna(0)
+    df.cohort_id = df.cohort_id.astype('int')
+    df['datetime'] = pd.to_datetime(df['date'] + ' ' + df['time'])
+    df['date'] = pd.to_datetime(df['date'])
+    df['time'] = pd.to_datetime(df['time']).dt.time
+    df.set_index('datetime', inplace=True)
+
+    return df
+
+

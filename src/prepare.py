@@ -84,5 +84,7 @@ def eda_log_data(train, df):
     .merge(ip_status, on=['ip', 'status'], how='left')
     .set_index('timestamp')
     )
+    df[['request_call','api_version','endpoints','http']] = \
+    df.request_method.str.extract(r'(?P<request_call>^[A-Z]+)\s(?P<api_version>\/api\/v[0-9])(?P<endpoints>.+)(?P<http_version>HTTP\/[0-9]\.[0-9])', expand = True)
     
     return df
