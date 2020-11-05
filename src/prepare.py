@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import re as r
 
 
 def prep_log_data(df):
@@ -13,13 +14,16 @@ def prep_log_data(df):
     
     for col in ['request_method', 'request_agent', 'destination']:
         df[col] = df[col].str.replace('"', '')
-        df['request_method'] = df.request_method.str.replace(r'\?page=[0-9]+', '', regex=True)
-    
+        
+    df['request_method'] = df.request_method.str.replace(r'\?page=[0-9]+', '', regex=True)
+    df['agent_name'] = df.request_agent.str.replace(r'([-/ ].*)', "").str.lower()
     df['size_mb'] = [n/1024/1024 for n in df['size']]
+    df['download_size'] = pd.cut(df.size_mb, 3, labels=['Low', 'Average', 'High'])
     
     ip_stats = ip_statistics(df)
     df = df.reset_index().merge(ip_stats, left_on='ip', right_on='ip').set_index('timestamp')
     df.index = df.index.tz_localize(None)
+    
     return df
 
 
@@ -53,18 +57,16 @@ def ip_status_proabilities(df):
     
     '''
     status_given_ip = (
-        
-        (df.groupby(['ip', 'status']).size()
-        / df.groupby(['ip']).status.size())
-        .reset_index().
-        rename(columns={0:'prob_status_given_ip'})
+    (df.groupby(['ip', 'status']).size()
+    / df.groupby(['ip']).status.size())
+    .reset_index()
+    .rename(columns={0:'prob_status_given_ip'})   
     )
     
     ip_status_count = (
-
-        pd.DataFrame(df.groupby(by=['ip', 'status']).size())
-        .reset_index()
-        .rename(columns={0:'ip_status_count'})
+    pd.DataFrame(df.groupby(by=['ip', 'status']).size())
+    .reset_index()
+    .rename(columns={0:'ip_status_count'})  
     )
     
     ip_status = ip_status_count.merge(status_given_ip, on=['ip', 'status'])
@@ -76,14 +78,11 @@ def eda_log_data(train, df):
     '''
     ip_status = ip_status_proabilities(train)
     
-    df = (
-            
+    df = (        
     df
     .reset_index()
     .merge(ip_status, on=['ip', 'status'], how='left')
-    .fillna(value=0)
     .set_index('timestamp')
-    
     )
     
     return df
