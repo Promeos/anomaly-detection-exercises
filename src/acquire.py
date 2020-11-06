@@ -52,14 +52,6 @@ def get_cohort_log_data():
                     sep=r'\s(?=(?:[^"]*"[^"]*")*[^"]*$)(?![^\[]*\])',
                     na_values='"-"',
                     usecols=[0,1,2,3,4,5])
-
-    df = df.fillna(0)
-    df.cohort_id = df.cohort_id.astype('int')
-    df['datetime'] = pd.to_datetime(df['date'] + ' ' + df['time'])
-    df['date'] = pd.to_datetime(df['date'])
-    df['time'] = pd.to_datetime(df['time']).dt.time
-    df.set_index('datetime', inplace=True)
-
     return df
 
 

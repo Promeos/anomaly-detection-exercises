@@ -24,6 +24,9 @@ def prep_log_data(df):
     df = df.reset_index().merge(ip_stats, left_on='ip', right_on='ip').set_index('timestamp')
     df.index = df.index.tz_localize(None)
     
+    df[['request_call','api_version','endpoints','http']] = \
+    df.request_method.str.extract(r'(?P<request_call>^[A-Z]+)\s(?P<api_version>\/api\/v[0-9])(?P<endpoints>.+)(?P<http_version>HTTP\/[0-9]\.[0-9])', expand = True)
+    
     return df
 
 
@@ -72,6 +75,7 @@ def ip_status_proabilities(df):
     ip_status = ip_status_count.merge(status_given_ip, on=['ip', 'status'])
     return ip_status
 
+
 def eda_log_data(train, df):
     '''
     
@@ -84,7 +88,16 @@ def eda_log_data(train, df):
     .merge(ip_status, on=['ip', 'status'], how='left')
     .set_index('timestamp')
     )
-    df[['request_call','api_version','endpoints','http']] = \
-    df.request_method.str.extract(r'(?P<request_call>^[A-Z]+)\s(?P<api_version>\/api\/v[0-9])(?P<endpoints>.+)(?P<http_version>HTTP\/[0-9]\.[0-9])', expand = True)
+    return df
+
+
+def prep_curriculum_log_data(df):
+    '''
     
+    '''
+    df = df.fillna(0)
+    df.cohort_id = df.cohort_id.astype('int')
+    df['datetime'] = pd.to_datetime(df['date'] + ' ' + df['time'])
+    df.drop(columns=['date', 'time'], inplace=True)
+    df.set_index('datetime', inplace=True)
     return df
