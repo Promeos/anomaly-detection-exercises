@@ -101,3 +101,20 @@ def prep_curriculum_log_data(df):
     df.drop(columns=['date', 'time'], inplace=True)
     df.set_index('datetime', inplace=True)
     return df
+
+
+def split_time_series(df):
+    '''
+
+    '''
+    # split the data using the percentage based method.
+    train_size = int(len(df) * .5)
+    validate_size = int(len(df) * .3)
+    test_size = int(len(df) - train_size - validate_size)
+    validate_end_index = train_size + validate_size
+
+    # split into train, validation, test
+    train = df[: train_size]
+    validate = df[train_size : validate_end_index]
+    test = df[validate_end_index : ]
+    return train, validate, test
